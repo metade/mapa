@@ -74,6 +74,8 @@ GEM
       webrick (~> 1.7)
     jekyll-sass-converter (3.1.0)
       sass-embedded (~> 1.75)
+    jekyll-seo-tag (2.8.0)
+      jekyll (>= 3.8, < 5.0)
     jekyll-watch (2.2.1)
       listen (~> 3.0)
     json (2.15.1)
@@ -174,6 +176,7 @@ DEPENDENCIES
   benchmark
   http (~> 5.0)
   jekyll (~> 4.4.1)
+  jekyll-seo-tag
   logger
   mini_magick (~> 4.12)
   nokogiri (~> 1.15)

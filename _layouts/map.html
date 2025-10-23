@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en" }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {%- seo -%}
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ '/assets/css/theme.css' | asset_url }}">
+
+    <!-- MapLibre GL JS CSS -->
+    <link href="https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.css" rel="stylesheet">
+
+    <!-- Map CSS -->
+    <link rel="stylesheet" href="{{ '/assets/css/map.css' | asset_url }}">
+
+    <script>
+      window.pageData = {
+        mapCenter: {{ page.map_center | default: '[-9.13628, 38.72614]' | jsonify }}
+      };
+    </script>
+  </head>
+
+  <body class="map-page">
+    <main class="page-content d-flex flex-column" aria-label="Content">
+      <!-- Header (Mobile) / Overlay (Desktop) -->
+      <header class="map-header bg-primary bg-opacity-75 text-white p-3 shadow">
+          <div class="d-flex justify-content-between align-items-start">
+              <h1 class="h4 fw-semibold mb-2">🚧🚧🚧</h1>
+          </div>
+          <p class="mb-0 small">
+              🚧🚧🚧
+          </p>
+      </header>
+
+      <!-- Map Container -->
+      <div class="map-container flex-grow-1">
+        <div id="map"></div>
+      </div>
+
+      <!-- Side Panel -->
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="detailsPanel" aria-labelledby="detailsPanelLabel">
+        <div class="offcanvas-header bg-light border-bottom">
+          <h5 class="offcanvas-title fw-semibold text-dark" id="detailsPanelLabel">
+            Detalhes
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" id="panelBody">
+          <!-- Content will be loaded from page templates -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.js"></script>
+
+    <!-- Map JS -->
+    <script src="{{ '/assets/js/map.js' | asset_url }}"></script>
+  </body>
+</html>
