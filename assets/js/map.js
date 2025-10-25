@@ -111,30 +111,13 @@ class MapManager {
     }
 
     // Initialize MapLibre map (loading will be cleared after map loads)
+    const MAPTILER_KEY = "BlScxjvw8WYk3TGxzgU8";
+
     this.map = new maplibregl.Map({
       container: "map",
-      style: {
-        version: 8,
-        sources: {
-          osm: {
-            type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            attribution:
-              '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          },
-        },
-        layers: [
-          {
-            id: "osm",
-            type: "raster",
-            source: "osm",
-          },
-        ],
-      },
+      style: `https://api.maptiler.com/maps/positron/style.json?key=${MAPTILER_KEY}`,
       center: mapCenter,
-      zoom: 13,
-      attributionControl: true,
+      zoom: 14,
     });
 
     // Wait for map to load, then add features
