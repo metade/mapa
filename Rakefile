@@ -5,6 +5,6 @@ task :build do
 
   pp MyGoogleMapsDownloader.new(
     map_id: map_id,
-    local: true
+    local: false
   ).call
 end
