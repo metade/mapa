@@ -51,58 +51,6 @@
     }
 }
 
-/* MapLibre Popup Customization */
-.maplibregl-popup {
-    max-width: 300px;
-}
-
-.maplibregl-popup-content {
-    padding: 0;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.popup-header {
-    background: var(--bs-primary);
-    color: white;
-    padding: 12px 16px;
-    border-radius: 8px 8px 0 0;
-    margin: 0;
-}
-
-.popup-body {
-    padding: 16px;
-}
-
-.popup-body p {
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-}
-
-.popup-body .badge {
-    font-size: 0.75rem;
-}
-
-.popup-images {
-    margin-top: 12px;
-}
-
-.popup-images img {
-    width: 100%;
-    max-width: 100px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 4px;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.popup-images img:hover {
-    transform: scale(1.05);
-}
-
 /* Feature Markers */
 .feature-marker {
     background-color: var(--bs-primary);

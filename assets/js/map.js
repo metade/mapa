@@ -3,7 +3,7 @@ class MapManager {
   constructor() {
     this.map = null;
     this.featuresData = null;
-    this.currentPopup = null;
+    this.selectedFeatureId = null;
     this.init();
   }
 
@@ -210,9 +210,24 @@ class MapManager {
       source: "features",
       filter: ["!", ["has", "point_count"]],
       paint: {
-        "circle-color": "#0d6efd",
-        "circle-radius": 8,
-        "circle-stroke-width": 2,
+        "circle-color": [
+          "case",
+          ["==", ["get", "slug"], ["literal", this.selectedFeatureId || ""]],
+          "#28a745", // Green for selected
+          "#0d6efd", // Blue for normal
+        ],
+        "circle-radius": [
+          "case",
+          ["==", ["get", "slug"], ["literal", this.selectedFeatureId || ""]],
+          12, // Larger for selected
+          8, // Normal size
+        ],
+        "circle-stroke-width": [
+          "case",
+          ["==", ["get", "slug"], ["literal", this.selectedFeatureId || ""]],
+          3, // Thicker stroke for selected
+          2, // Normal stroke
+        ],
         "circle-stroke-color": "#ffffff",
       },
     });
@@ -243,9 +258,21 @@ class MapManager {
         });
     });
 
-    // Click on individual points to show popup
+    // Click on individual points to show sidebar
     this.map.on("click", "unclustered-point", (e) => {
-      this.showFeaturePopup(e.features[0], e.lngLat);
+      const slug = e.features[0].properties.slug;
+      if (slug) {
+        this.selectFeature(slug);
+      } else {
+        // Fallback if no slug - use first available identifier
+        const props = e.features[0].properties;
+        const fallbackFeature = this.featuresData?.features?.find(
+          (f) => f.properties.nome === props.nome,
+        );
+        if (fallbackFeature) {
+          this.selectFeature(fallbackFeature.properties.slug);
+        }
+      }
     });
 
     // Change cursor on hover
@@ -266,82 +293,6 @@ class MapManager {
     });
   }
 
-  showFeaturePopup(feature, lngLat) {
-    const props = feature.properties;
-
-    // Close existing popup
-    if (this.currentPopup) {
-      this.currentPopup.remove();
-    }
-
-    // Build popup content
-    const popupContent = this.buildPopupContent(props);
-
-    // Create and show popup
-    this.currentPopup = new maplibregl.Popup({
-      closeOnClick: true,
-      maxWidth: "300px",
-    })
-      .setLngLat(lngLat)
-      .setHTML(popupContent)
-      .addTo(this.map);
-
-    // Add event listeners after popup is added to DOM
-    this.currentPopup.on("open", () => {
-      this.addPopupEventListeners();
-    });
-  }
-
-  buildPopupContent(props) {
-    const {
-      nome = "Sem nome",
-      descricao = "Sem descrição",
-      pelouro = "N/A",
-      tema = "N/A",
-      estado = "N/A",
-      imagens = [],
-    } = props;
-
-    // Build images HTML
-    let imagesHtml = "";
-    if (imagens && imagens.length > 0) {
-      imagesHtml = `
-                <div class="popup-images">
-                    ${imagens
-                      .map(
-                        (img) => `
-                        <img src="${img}" alt="Imagem" class="popup-image" data-src="${img}">
-                    `,
-                      )
-                      .join("")}
-                </div>
-            `;
-    }
-
-    // Get state badge class
-    const stateClass = this.getStateBadgeClass(estado);
-
-    return `
-            <div class="popup-content">
-                <div class="popup-header">
-                    <h6 class="mb-0">${nome}</h6>
-                </div>
-                <div class="popup-body">
-                    <p class="mb-2"><strong>Descrição:</strong><br>${descricao}</p>
-                    <p class="mb-1"><strong>Pelouro:</strong> <span class="badge bg-secondary">${pelouro}</span></p>
-                    <p class="mb-1"><strong>Tema:</strong> <span class="badge bg-info">${tema}</span></p>
-                    <p class="mb-2"><strong>Estado:</strong> <span class="badge ${stateClass}">${estado}</span></p>
-                    ${imagesHtml}
-                    <div class="mt-3">
-                        <button class="btn btn-primary btn-sm w-100" onclick="mapManager.openDetailsPanel('${props.slug || ""}')">
-                            Ver Detalhes
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-  }
-
   getStateBadgeClass(estado) {
     switch (estado?.toLowerCase()) {
       case "resolvido":
@@ -352,15 +303,6 @@ class MapManager {
       default:
         return "bg-danger";
     }
-  }
-
-  addPopupEventListeners() {
-    // Add click listeners for images to open in modal/lightbox
-    document.querySelectorAll(".popup-image").forEach((img) => {
-      img.addEventListener("click", (e) => {
-        this.openImageModal(e.target.dataset.src);
-      });
-    });
   }
 
   openImageModal(imageSrc) {
@@ -391,12 +333,42 @@ class MapManager {
     });
   }
 
-  openDetailsPanel(slug) {
-    // Close popup
-    if (this.currentPopup) {
-      this.currentPopup.remove();
-    }
+  selectFeature(slug) {
+    // Update selected feature
+    this.selectedFeatureId = slug;
 
+    // Update marker styling
+    this.updateMarkerStyling();
+
+    // Open details panel
+    this.openDetailsPanel(slug);
+  }
+
+  updateMarkerStyling() {
+    // Update the paint properties to reflect the new selection
+    this.map.setPaintProperty("unclustered-point", "circle-color", [
+      "case",
+      ["==", ["get", "slug"], ["literal", this.selectedFeatureId || ""]],
+      "#28a745", // Green for selected
+      "#0d6efd", // Blue for normal
+    ]);
+
+    this.map.setPaintProperty("unclustered-point", "circle-radius", [
+      "case",
+      ["==", ["get", "slug"], ["literal", this.selectedFeatureId || ""]],
+      12, // Larger for selected
+      8, // Normal size
+    ]);
+
+    this.map.setPaintProperty("unclustered-point", "circle-stroke-width", [
+      "case",
+      ["==", ["get", "slug"], ["literal", this.selectedFeatureId || ""]],
+      3, // Thicker stroke for selected
+      2, // Normal stroke
+    ]);
+  }
+
+  openDetailsPanel(slug) {
     // Find feature by slug
     const feature = this.featuresData?.features?.find(
       (f) => f.properties.slug === slug,
@@ -405,6 +377,14 @@ class MapManager {
       console.warn("Feature not found:", slug);
       return;
     }
+
+    // Center map on the selected feature
+    const coordinates = feature.geometry.coordinates;
+    this.map.flyTo({
+      center: coordinates,
+      zoom: Math.max(this.map.getZoom(), 16),
+      duration: 1000,
+    });
 
     // Update panel content
     this.updateDetailsPanel(feature.properties);
@@ -422,16 +402,38 @@ class MapManager {
       pelouro = "N/A",
       tema = "N/A",
       estado = "N/A",
-      imagens = [],
+      imagens,
     } = props;
 
     let imagesHtml = "";
-    if (imagens && imagens.length > 0) {
+    let imageArray = [];
+
+    // Handle various data types for images
+    try {
+      if (imagens) {
+        if (Array.isArray(imagens)) {
+          imageArray = imagens.filter((img) => img && typeof img === "string");
+        } else if (typeof imagens === "string") {
+          // Single image as string
+          imageArray = [imagens];
+        } else if (typeof imagens === "object") {
+          // Try to extract array from object or convert to array
+          imageArray = Object.values(imagens).filter(
+            (img) => img && typeof img === "string",
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error processing images:", error);
+      imageArray = [];
+    }
+
+    if (imageArray.length > 0) {
       imagesHtml = `
                 <div class="mb-3">
                     <h6>Imagens</h6>
                     <div class="d-flex flex-wrap gap-2">
-                        ${imagens
+                        ${imageArray
                           .map(
                             (img) => `
                             <img src="${img}" alt="Imagem" class="img-thumbnail" style="width: 100px; height: 80px; object-fit: cover; cursor: pointer;" onclick="mapManager.openImageModal('${img}')">
