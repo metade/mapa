@@ -69,7 +69,7 @@ class MapManager {
 
   async loadFeaturesData() {
     try {
-      const response = await fetch("/assets/data/features.geojson");
+      const response = await fetch(window.pageData.featuresGeoJsonUrl);
 
       if (!response.ok) {
         throw new Error(
@@ -111,7 +111,7 @@ class MapManager {
     }
 
     // Initialize MapLibre map (loading will be cleared after map loads)
-    const MAPTILER_KEY = "BlScxjvw8WYk3TGxzgU8";
+    const MAPTILER_KEY = "yALgp8vIEc84mrgiYZb0";
 
     this.map = new maplibregl.Map({
       container: "map",

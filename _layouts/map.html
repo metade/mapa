@@ -18,6 +18,7 @@
 
     <script>
       window.pageData = {
+        featuresGeoJsonUrl: {{ '/assets/data/features.geojson' | relative_url | jsonify }},
         mapCenter: {% if page.map_center %}{{ page.map_center | jsonify }}{% else %}[-9.13628, 38.72614]{% endif %}
       };
     </script>

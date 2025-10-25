@@ -5,9 +5,10 @@ require_relative "my_google_maps_downloader"
 class MyGoogleMapsDownloader
   attr_reader :map_id
 
-  def initialize(map_id:, local: false)
+  def initialize(map_id:, local: false, verbose: false)
     @map_id = map_id
     @local = local
+    @verbose = verbose
 
     @output_file_path = "assets/data/features.geojson"
   end
