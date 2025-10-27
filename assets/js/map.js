@@ -28,25 +28,16 @@ class MapManager {
     const loadingDiv = document.createElement("div");
     loadingDiv.id = "map-loading-overlay";
     loadingDiv.innerHTML = `
-            <div class="map-loading">
+            <div class="text-center p-4">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">A carregar...</span>
                 </div>
                 <p class="mt-2 mb-0">A carregar dados do mapa...</p>
             </div>
         `;
-    loadingDiv.style.cssText = `
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.9);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    `;
+    loadingDiv.className =
+      "position-absolute top-0 start-0 end-0 bottom-0 d-flex align-items-center justify-content-center bg-white bg-opacity-75";
+    loadingDiv.style.zIndex = "9999";
     mapContainer.appendChild(loadingDiv);
   }
 
@@ -60,8 +51,8 @@ class MapManager {
   showError(message) {
     const mapContainer = document.getElementById("map");
     mapContainer.innerHTML = `
-            <div class="map-error">
-                <h5>⚠️ Erro</h5>
+            <div class="position-absolute top-50 start-50 translate-middle text-center bg-danger bg-opacity-90 text-white p-4 rounded" style="max-width: 300px; z-index: 999;">
+                <h5 class="mb-2">⚠️ Erro</h5>
                 <p class="mb-0">${message}</p>
             </div>
         `;
@@ -386,6 +377,7 @@ class MapManager {
       tema = "N/A",
       estado = "N/A",
       imagens,
+      slug,
     } = props;
 
     let imagesHtml = "";
@@ -419,7 +411,7 @@ class MapManager {
                         ${imageArray
                           .map(
                             (img) => `
-                            <img src="${img}" alt="Imagem" class="img-thumbnail" style="width: 100px; height: 80px; object-fit: cover; cursor: pointer;" onclick="mapManager.openImageModal('${img}')">
+                            <img src="${img}" alt="Imagem" class="img-thumbnail rounded" style="width: 100px; height: 80px; object-fit: cover;" role="button" onclick="mapManager.openImageModal('${img}')">
                         `,
                           )
                           .join("")}
@@ -429,6 +421,18 @@ class MapManager {
     }
 
     const stateClass = this.getStateBadgeClass(estado);
+
+    // Build navigation link if slug exists
+    const navigationHtml = slug
+      ? `
+        <div class="mb-3">
+            <a href="/pontos/${slug}/" class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-2 fw-medium py-3">
+                <i class="bi bi-arrow-right-circle fs-5"></i>
+                Ver Página Completa
+            </a>
+        </div>
+    `
+      : "";
 
     const panelBody = document.getElementById("panelBody");
     panelBody.innerHTML = `
@@ -447,6 +451,8 @@ class MapManager {
             </div>
 
             ${imagesHtml}
+
+            ${navigationHtml}
         `;
   }
 
