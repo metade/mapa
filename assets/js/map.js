@@ -268,22 +268,50 @@ class MapManager {
   }
 
   addEventListeners() {
-    // Click on clusters to zoom in
+    // Click on clusters to zoom in (immediate single click)
     this.map.on("click", "clusters", (e) => {
+      // Immediate response to prevent any delay
       const features = this.map.queryRenderedFeatures(e.point, {
         layers: ["clusters"],
       });
-      const clusterId = features[0].properties.cluster_id;
-      this.map
-        .getSource("features")
-        .getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err) return;
 
-          this.map.easeTo({
-            center: features[0].geometry.coordinates,
-            zoom: zoom,
-          });
-        });
+      if (!features.length) return;
+
+      const clusterId = features[0].properties.cluster_id;
+      const pointCount = features[0].properties.point_count;
+
+      console.log(`Cluster clicked with ${pointCount} points, zooming in...`);
+
+      // Use simplified zoom approach first (more reliable)
+      const currentZoom = this.map.getZoom();
+      console.log(`Current zoom level: ${currentZoom.toFixed(1)}`);
+      console.log(`Cluster coordinates:`, features[0].geometry.coordinates);
+
+      // Simple approach: zoom in by 2-3 levels depending on current zoom
+      let targetZoom;
+      if (currentZoom < 10) {
+        targetZoom = currentZoom + 3;
+      } else if (currentZoom < 14) {
+        targetZoom = currentZoom + 2;
+      } else {
+        targetZoom = Math.min(currentZoom + 1.5, 16);
+      }
+
+      console.log(`Zooming from ${currentZoom.toFixed(1)} to ${targetZoom}`);
+
+      this.map.easeTo({
+        center: features[0].geometry.coordinates,
+        zoom: targetZoom,
+        duration: 600,
+        essential: true,
+      });
+
+      // Add callback to confirm zoom completion
+      this.map.once("moveend", () => {
+        console.log(
+          `Zoom animation completed. Final zoom: ${this.map.getZoom().toFixed(1)}`,
+        );
+      });
     });
 
     // Click on individual points to show sidebar
