@@ -59,6 +59,8 @@ class MapSiteGenerator
   def generate_jekyll_pages(features)
     Dir.mkdir("pontos") unless File.exist?("pontos")
 
+    write_jekyll_file("pontos/index.html", {"layout" => "pontos"})
+
     features.each do |feature|
       slug = feature.dig("properties", "slug")
       raise "No slug defined for feature" unless slug.present?
