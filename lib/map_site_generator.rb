@@ -1,4 +1,6 @@
 require_relative "image_downloader"
+require "active_support/core_ext/hash"
+require "yaml"
 
 class MapSiteGenerator
   attr_reader :features
@@ -14,6 +16,7 @@ class MapSiteGenerator
   def call
     features_with_images = download_images(features)
     write_geojson(features_with_images)
+    generate_jekyll_pages(features_with_images)
   end
 
   private
@@ -25,15 +28,13 @@ class MapSiteGenerator
     )
 
     data.map do |feature|
-      if feature["properties"]["imagens"].nil?
-        feature
-      else
+      if feature["properties"]["imagens"].present?
         feature["properties"]["imagens"] = feature["properties"]["imagens"].map do |image_url|
           image_downloader.download_image(image_url)
         end
-
-        feature
       end
+
+      feature
     end
   end
 
@@ -53,6 +54,31 @@ class MapSiteGenerator
     # Write the GeoJSON file
     File.write(@output_file_path, JSON.pretty_generate(geojson))
     log "Saved final GeoJSON to #{@output_file_path}"
+  end
+
+  def generate_jekyll_pages(features)
+    Dir.mkdir("pontos") unless File.exist?("pontos")
+
+    features.each do |feature|
+      slug = feature.dig("properties", "slug")
+      raise "No slug defined for feature" unless slug.present?
+
+      front_matter = {
+        "layout" => "ponto"
+      }.merge(feature["properties"])
+
+      file_name = "pontos/#{slug}.html"
+      write_jekyll_file(file_name, front_matter)
+    end
+  end
+
+  def write_jekyll_file(file_name, front_matter)
+    File.open(file_name, "wb") do |file|
+      file.puts(front_matter.stringify_keys.to_yaml)
+      file.puts("---")
+    end
+
+    log "Saved jekyll file to #{file_name}"
   end
 
   def local? = @local
