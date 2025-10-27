@@ -7,3 +7,5 @@ _site/
 tmp/*
 
 assets/data/*
+
+.env

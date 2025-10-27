@@ -37,6 +37,7 @@ jobs:
       - name: Run Rake build
         run: bundle exec rake build
         env:
+          CSV_URL: ${{ secrets.CSV_URL }}
           MY_GOOGLE_MAPS_ID: ${{ secrets.MY_GOOGLE_MAPS_ID }}
 
       - name: Build with Jekyll

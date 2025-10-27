@@ -1,39 +1,22 @@
-require_relative "kml_downloader_and_processor"
 require_relative "image_downloader"
-require_relative "my_google_maps_downloader"
 
-class MyGoogleMapsDownloader
-  attr_reader :map_id
+class MapSiteGenerator
+  attr_reader :features
 
-  def initialize(map_id:, local: false, verbose: false)
-    @map_id = map_id
+  def initialize(features:, local: false, verbose: false)
+    @features = features
     @local = local
     @verbose = verbose
 
     @output_file_path = "assets/data/features.geojson"
   end
 
-  def call()
-    features = download_and_parse_kml
+  def call
     features_with_images = download_images(features)
     write_geojson(features_with_images)
   end
 
   private
-
-  def download_and_parse_kml
-    KmlDownloaderAndProcessor.new(
-      map_id: map_id,
-      local: local?,
-      property_names: [
-        "slug", "descricao", "pelouro", "tema", "estado",
-      ],
-      image_property_names: [
-        "gx_media_links",
-        "point and shoot! use the camera to take a photo_url"
-      ],
-    ).call
-  end
 
   def download_images(data)
     image_downloader = ImageDownloader.new(
@@ -57,7 +40,7 @@ class MyGoogleMapsDownloader
   def write_geojson(features)
     geojson = {
       "type" => "FeatureCollection",
-      "name" => "Features Layer (#{map_id})",
+      "name" => "Features Layer",
       "crs" => {
         "type" => "name",
         "properties" => {
@@ -72,7 +55,7 @@ class MyGoogleMapsDownloader
     log "Saved final GeoJSON to #{@output_file_path}"
   end
 
-  def local?() = @local
+  def local? = @local
 
   def log(message)
     puts(message) if @verbose

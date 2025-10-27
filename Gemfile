@@ -19,5 +19,6 @@ gem "logger"
 
 # Development dependencies
 group :development do
+  gem "dotenv"
   gem "standardrb", "~> 1.0"
 end
