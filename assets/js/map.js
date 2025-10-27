@@ -7,6 +7,22 @@ class MapManager {
     this.init();
   }
 
+  // Helper function to generate URLs with Jekyll base URL
+  // This handles deployment to subdirectories (e.g., GitHub Pages)
+  // Examples:
+  //   Local dev (baseUrl: null): "/pontos/abc/" → "/pontos/abc/"
+  //   GitHub Pages (baseUrl: "/mapa"): "/pontos/abc/" → "/mapa/pontos/abc/"
+  getUrl(path) {
+    const baseUrl = window.pageData?.baseUrl || "";
+
+    // If no baseUrl or path doesn't start with /, return as-is
+    if (!baseUrl || !path.startsWith("/")) {
+      return path;
+    }
+
+    return baseUrl + path;
+  }
+
   async init() {
     try {
       // Show loading state
@@ -411,7 +427,7 @@ class MapManager {
                         ${imageArray
                           .map(
                             (img) => `
-                            <img src="${img}" alt="Imagem" class="img-thumbnail rounded" style="width: 100px; height: 80px; object-fit: cover;" role="button" onclick="mapManager.openImageModal('${img}')">
+                            <img src="${this.getUrl(img)}" alt="Imagem" class="img-thumbnail rounded" style="width: 100px; height: 80px; object-fit: cover;" role="button" onclick="mapManager.openImageModal('${img}')">
                         `,
                           )
                           .join("")}
@@ -426,7 +442,7 @@ class MapManager {
     const navigationHtml = slug
       ? `
         <div class="mb-3">
-            <a href="/pontos/${slug}/" class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-2 fw-medium py-3">
+            <a href="${this.getUrl(`/pontos/${slug}/`)}" class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-2 fw-medium py-3">
                 <i class="bi bi-arrow-right-circle fs-5"></i>
                 Ver Página Completa
             </a>
