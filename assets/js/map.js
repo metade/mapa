@@ -161,16 +161,20 @@ class MapManager {
       return;
     }
 
-    // Add GeoJSON source
+    // Add GeoJSON source with clustering
+    // Clustering groups nearby points into circles with count labels
+    // - Clusters appear when zoomed out and points are close together
+    // - Click clusters to zoom in and separate the points
+    // - Individual points appear when zoomed in enough
     this.map.addSource("features", {
       type: "geojson",
       data: this.featuresData,
       cluster: true,
-      clusterMaxZoom: 14,
-      clusterRadius: 50,
+      clusterMaxZoom: 14, // Stop clustering at zoom 14
+      clusterRadius: 50, // Group points within 50px radius
     });
 
-    // Add cluster circles
+    // Add cluster circles with improved styling
     this.map.addLayer({
       id: "clusters",
       type: "circle",
@@ -180,18 +184,52 @@ class MapManager {
         "circle-color": [
           "step",
           ["get", "point_count"],
-          "#51bbd6",
-          10,
-          "#f1f075",
-          30,
-          "#f28cb1",
+          "#0d6efd", // Bootstrap primary blue for small clusters
+          5,
+          "#198754", // Bootstrap success green for medium clusters
+          15,
+          "#fd7e14", // Bootstrap warning orange for large clusters
         ],
-        "circle-radius": ["step", ["get", "point_count"], 20, 10, 30, 30, 40],
+        "circle-radius": [
+          "step",
+          ["get", "point_count"],
+          20, // Small clusters: 20px
+          5,
+          25, // Medium clusters: 25px
+          15,
+          30, // Large clusters: 30px
+        ],
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#ffffff",
+        "circle-opacity": 0.8,
       },
     });
 
-    // Skip cluster count labels to avoid font issues
-    // Clusters will still show different colors/sizes based on point count
+    // Add cluster count labels with error handling
+    try {
+      this.map.addLayer({
+        id: "cluster-count",
+        type: "symbol",
+        source: "features",
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": ["get", "point_count_abbreviated"],
+          "text-font": ["Noto Sans Regular", "Arial Unicode MS Regular"],
+          "text-size": 14,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+        },
+        paint: {
+          "text-color": "#ffffff",
+          "text-halo-color": "#000000",
+          "text-halo-width": 1,
+          "text-halo-blur": 1,
+        },
+      });
+    } catch (error) {
+      console.warn("Could not add cluster count labels:", error);
+      // Continue without text labels - clusters will still work with color/size
+    }
 
     // Add individual point markers
     this.map.addLayer({

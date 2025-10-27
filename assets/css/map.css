@@ -80,3 +80,29 @@
     border-radius: 8px;
     text-align: center;
 }
+
+/* Cluster Styling */
+.maplibregl-cluster {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.maplibregl-cluster:hover {
+    opacity: 0.8;
+}
+
+/* Cluster text styling */
+.maplibregl-popup .maplibregl-popup-content {
+    border-radius: 8px;
+}
+
+/* MapLibre controls positioning */
+.maplibregl-ctrl-top-right {
+    top: 80px;
+}
+
+@media (max-width: 768px) {
+    .maplibregl-ctrl-top-right {
+        top: 10px;
+    }
+}
