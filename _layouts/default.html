@@ -14,7 +14,13 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container">
-        <a class="navbar-brand" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+        <a class="navbar-brand d-flex align-items-center" href="{{ '/' | relative_url }}">
+          <img src="{{ '/assets/images/logo.jpg' | relative_url }}" alt="{{ site.title }} Logo" height="40" class="me-2">
+          <div class="d-flex align-items-start align-items-md-center flex-column flex-md-row">
+            <strong class="me-1">MEPA</strong>
+            <small class="text-body-secondary">{{ site.title }}</small>
+          </div>
+        </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>

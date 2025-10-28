@@ -33,11 +33,15 @@
   <body class="map-page">
     <main class="page-content d-flex flex-column" aria-label="Content">
       <!-- Header (Mobile) / Overlay (Desktop) -->
-      <header class="map-header bg-primary bg-opacity-75 text-white p-3 shadow">
-          <div class="d-flex justify-content-between align-items-start">
-              <h1 class="h4 fw-semibold mb-2">Sugestões</h1>
+      <header class="map-header bg-light bg-opacity-75 p-3 shadow">
+          <div class="d-flex justify-content-start align-items-start">
+            <img src="{{ '/assets/images/logo.jpg' | relative_url }}" alt="{{ site.title }} Logo" height="60" class="me-2">
+            <h1 class="h4 mb-2">
+                <span class="h3 fw-bold">MEPA</span>
+                <small class="d-block text-body-secondary">{{ site.title }}</small>
+            </h1>
           </div>
-          <p class="mb-0 small">
+          <p class="mb-0">
               Mapa de sugestões para Arroios
           </p>
 
@@ -65,7 +69,7 @@
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-        <div class="offcanvas-body" id="panelBody">
+        <div class="offcanvas-body bg-white" id="panelBody">
           <!-- Content will be loaded from page templates -->
         </div>
       </div>
