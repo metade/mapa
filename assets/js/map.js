@@ -76,6 +76,7 @@ class MapManager {
 
   async loadFeaturesData() {
     try {
+      // Load features GeoJSON
       const response = await fetch(window.pageData.featuresGeoJsonUrl);
 
       if (!response.ok) {
@@ -90,9 +91,32 @@ class MapManager {
         this.featuresData?.features?.length,
         "features",
       );
+
+      // Load boundary GeoJSON
+      await this.loadBoundaryData();
     } catch (error) {
       console.error("Error loading GeoJSON data:", error);
       throw error;
+    }
+  }
+
+  async loadBoundaryData() {
+    try {
+      const boundaryUrl =
+        window.pageData?.boundaryGeoJsonUrl ||
+        this.getUrl("/assets/boundary.geojson");
+      const response = await fetch(boundaryUrl);
+
+      if (!response.ok) {
+        console.warn("Boundary data not available:", response.status);
+        return;
+      }
+
+      this.boundaryData = await response.json();
+      console.log("Boundary data loaded");
+    } catch (error) {
+      console.warn("Error loading boundary data:", error);
+      // Don't throw - boundary is optional
     }
   }
 
@@ -160,6 +184,9 @@ class MapManager {
       console.warn("No features data available");
       return;
     }
+
+    // Add boundary layer first (if available)
+    this.addBoundaryToMap();
 
     // Add GeoJSON source with clustering
     // Clustering groups nearby points into circles with count labels
@@ -263,8 +290,8 @@ class MapManager {
     // Add click handlers
     this.addEventListeners();
 
-    // Fit map to show all features
-    this.fitMapToFeatures();
+    // Fit map to show all features, or boundary if no features
+    this.fitMapToFeatures() || this.fitMapToBoundary();
   }
 
   addEventListeners() {
@@ -539,7 +566,7 @@ class MapManager {
   }
 
   fitMapToFeatures() {
-    if (!this.featuresData?.features?.length) return;
+    if (!this.featuresData?.features?.length) return false;
 
     const coordinates = this.featuresData.features.map(
       (feature) => feature.geometry.coordinates,
@@ -564,6 +591,61 @@ class MapManager {
         padding: 50,
         maxZoom: 16,
       });
+    }
+    return true;
+  }
+
+  addBoundaryToMap() {
+    if (!this.boundaryData) return;
+
+    // Add boundary source
+    this.map.addSource("boundary", {
+      type: "geojson",
+      data: this.boundaryData,
+    });
+
+    // Add boundary outline (continuous line, no fill)
+    this.map.addLayer({
+      id: "boundary-outline",
+      type: "line",
+      source: "boundary",
+      paint: {
+        "line-color": "#0d6efd",
+        "line-width": 3,
+        "line-opacity": 0.8,
+      },
+    });
+
+    console.log("Boundary layer added to map");
+  }
+
+  fitMapToBoundary() {
+    if (!this.boundaryData || !this.boundaryData.features?.length) return;
+
+    try {
+      // Get boundary feature coordinates
+      const feature = this.boundaryData.features[0];
+      if (feature.geometry.type === "Polygon") {
+        const coordinates = feature.geometry.coordinates[0];
+
+        // Create bounds from boundary coordinates
+        const bounds = coordinates.reduce(
+          (bounds, coord) => {
+            return bounds.extend(coord);
+          },
+          new maplibregl.LngLatBounds(coordinates[0], coordinates[0]),
+        );
+
+        // Fit map to boundary with padding
+        this.map.fitBounds(bounds, {
+          padding: 50,
+          maxZoom: 15,
+        });
+
+        console.log("Map fitted to boundary area");
+      }
+    } catch (error) {
+      console.warn("Error fitting map to boundary:", error);
     }
   }
 }
