@@ -115,12 +115,3 @@
         top: 10px;
     }
 }
-
-/* Filter collapse transition enhancement */
-#filterPanel {
-    transition: opacity 0.3s ease;
-}
-
-#filterPanel.collapsing {
-    opacity: 0.5;
-}
