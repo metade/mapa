@@ -199,6 +199,53 @@ layout: default
         const semResultados = document.getElementById("semResultados");
         const pontosCards = document.querySelectorAll(".ponto-card");
 
+        // Função para obter parâmetros da URL
+        function obterParametrosURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return {
+                tema: urlParams.get("tema") || "",
+                pelouro: urlParams.get("pelouro") || "",
+                estado: urlParams.get("estado") || "",
+            };
+        }
+
+        // Função para atualizar a URL com os filtros atuais
+        function atualizarURL() {
+            const params = new URLSearchParams();
+
+            if (filtroTema.value) {
+                params.set("tema", filtroTema.value);
+            }
+            if (filtroPelouro.value) {
+                params.set("pelouro", filtroPelouro.value);
+            }
+            if (filtroEstado.value) {
+                params.set("estado", filtroEstado.value);
+            }
+
+            const newUrl = params.toString()
+                ? `${window.location.pathname}?${params.toString()}`
+                : window.location.pathname;
+
+            // Atualizar URL sem recarregar a página
+            window.history.replaceState({}, "", newUrl);
+        }
+
+        // Função para aplicar filtros da URL aos elementos select
+        function aplicarFiltrosURL() {
+            const parametros = obterParametrosURL();
+
+            if (parametros.tema) {
+                filtroTema.value = parametros.tema;
+            }
+            if (parametros.pelouro) {
+                filtroPelouro.value = parametros.pelouro;
+            }
+            if (parametros.estado) {
+                filtroEstado.value = parametros.estado;
+            }
+        }
+
         function aplicarFiltros() {
             const temaValue = filtroTema.value.toLowerCase();
             const pelouroValue = filtroPelouro.value.toLowerCase();
@@ -245,6 +292,9 @@ layout: default
             } else {
                 semResultados.style.display = "none";
             }
+
+            // Atualizar URL após aplicar filtros
+            atualizarURL();
         }
 
         function limparFiltros() {
@@ -261,7 +311,8 @@ layout: default
         limparFiltrosBtn.addEventListener("click", limparFiltros);
         limparFiltrosMsgBtn.addEventListener("click", limparFiltros);
 
-        // Aplicar filtros iniciais e mostrar contador
+        // Aplicar filtros da URL primeiro, depois aplicar filtros e mostrar contador
+        aplicarFiltrosURL();
         aplicarFiltros();
     });
 </script>
