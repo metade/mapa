@@ -388,34 +388,6 @@ class MapManager {
     }
   }
 
-  openImageModal(imageSrc) {
-    // Create a simple modal for image viewing
-    const modal = document.createElement("div");
-    modal.className = "modal fade";
-    modal.innerHTML = `
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Imagem</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <img src="${imageSrc}" class="img-fluid" alt="Imagem">
-                    </div>
-                </div>
-            </div>
-        `;
-
-    document.body.appendChild(modal);
-    const bootstrapModal = new bootstrap.Modal(modal);
-    bootstrapModal.show();
-
-    // Remove modal from DOM when hidden
-    modal.addEventListener("hidden.bs.modal", () => {
-      document.body.removeChild(modal);
-    });
-  }
-
   selectFeature(slug) {
     // Update selected feature
     this.selectedFeatureId = slug;
@@ -520,7 +492,7 @@ class MapManager {
                         ${imageArray
                           .map(
                             (img) => `
-                            <img src="${this.getUrl(img)}" alt="Imagem" class="img-thumbnail rounded" style="width: 100px; height: 80px; object-fit: cover;" role="button" onclick="mapManager.openImageModal('${img}')">
+                            <img src="${this.getUrl(img)}" alt="Imagem" class="img-thumbnail rounded">
                         `,
                           )
                           .join("")}

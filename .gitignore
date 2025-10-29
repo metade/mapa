@@ -11,3 +11,5 @@ assets/data/*
 pontos
 
 .env
+
+.DS_Store
