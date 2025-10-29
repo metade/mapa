@@ -59,7 +59,15 @@ class MapSiteGenerator
   def generate_jekyll_pages(features)
     Dir.mkdir("pontos") unless File.exist?("pontos")
 
-    write_jekyll_file("pontos/index.html", {"layout" => "pontos"})
+    temas = features.map { |feature| feature.dig("properties", "tema") }.uniq.sort
+    estados = features.map { |feature| feature.dig("properties", "estado") }.uniq.sort
+    pelouros = features.map { |feature| feature.dig("properties", "pelouro") }.uniq.sort
+    write_jekyll_file("pontos/index.html", {
+      "layout" => "pontos",
+      "temas" => temas,
+      "estados" => estados,
+      "pelouros" => pelouros
+    })
 
     features.each do |feature|
       slug = feature.dig("properties", "slug")

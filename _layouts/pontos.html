@@ -12,11 +12,83 @@ layout: default
         </div>
     </div>
 
-    <div class="row">
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-filter me-2"></i>Filtros
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="filtroTema" class="form-label"
+                                >Tema</label
+                            >
+                            <select class="form-select" id="filtroTema">
+                                <option value="">Todos os temas</option>
+                                {% for tema in page.temas %}
+                                <option value="{{ tema }}">{{ tema }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="filtroPelouro" class="form-label"
+                                >Pelouro</label
+                            >
+                            <select class="form-select" id="filtroPelouro">
+                                <option value="">Todos os pelouros</option>
+                                {% for pelouro in page.pelouros %}
+                                <option value="{{ pelouro }}">
+                                    {{ pelouro }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="filtroEstado" class="form-label"
+                                >Estado</label
+                            >
+                            <select class="form-select" id="filtroEstado">
+                                <option value="">Todos os estados</option>
+                                {% for estado in page.estados %}
+                                <option value="{{ estado }}">
+                                    {{ estado }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col">
+                            <button
+                                type="button"
+                                class="btn btn-secondary btn-sm"
+                                id="limparFiltros"
+                            >
+                                <i class="fas fa-times me-1"></i>Limpar Filtros
+                            </button>
+                            <span
+                                class="ms-3 text-muted"
+                                id="contadorPontos"
+                            ></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="pontosContainer">
         {% assign pontos = site.pages | where_exp: "page", "page.path contains
         'pontos/'" | where_exp: "page", "page.slug != nil" | sort: "nome" %} {%
         for ponto in pontos %}
-        <div class="col-md-6 col-lg-4 mb-4">
+        <div
+            class="col-md-6 col-lg-4 mb-4 ponto-card"
+            data-tema="{{ ponto.tema }}"
+            data-pelouro="{{ ponto.pelouro }}"
+            data-estado="{{ ponto.estado }}"
+        >
             <div class="card h-100 shadow-sm">
                 {% if ponto.imagens and ponto.imagens.size > 0 %}
                 <img
@@ -95,4 +167,101 @@ layout: default
         </div>
     </div>
     {% endif %}
+
+    <!-- Mensagem de filtros sem resultados -->
+    <div class="row" id="semResultados" style="display: none">
+        <div class="col text-center">
+            <div class="alert alert-warning" role="alert">
+                <h4 class="alert-heading">
+                    <i class="fas fa-search me-2"></i>Nenhum ponto encontrado
+                </h4>
+                <p>Não há pontos que correspondam aos filtros selecionados.</p>
+                <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    id="limparFiltrosMsg"
+                >
+                    <i class="fas fa-times me-1"></i>Limpar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filtroTema = document.getElementById("filtroTema");
+        const filtroPelouro = document.getElementById("filtroPelouro");
+        const filtroEstado = document.getElementById("filtroEstado");
+        const limparFiltrosBtn = document.getElementById("limparFiltros");
+        const limparFiltrosMsgBtn = document.getElementById("limparFiltrosMsg");
+        const contadorPontos = document.getElementById("contadorPontos");
+        const semResultados = document.getElementById("semResultados");
+        const pontosCards = document.querySelectorAll(".ponto-card");
+
+        function aplicarFiltros() {
+            const temaValue = filtroTema.value.toLowerCase();
+            const pelouroValue = filtroPelouro.value.toLowerCase();
+            const estadoValue = filtroEstado.value.toLowerCase();
+
+            let pontosVisiveis = 0;
+
+            pontosCards.forEach((card) => {
+                const tema = card.dataset.tema
+                    ? card.dataset.tema.toLowerCase()
+                    : "";
+                const pelouro = card.dataset.pelouro
+                    ? card.dataset.pelouro.toLowerCase()
+                    : "";
+                const estado = card.dataset.estado
+                    ? card.dataset.estado.toLowerCase()
+                    : "";
+
+                const temaMatch = !temaValue || tema === temaValue;
+                const pelouroMatch = !pelouroValue || pelouro === pelouroValue;
+                const estadoMatch = !estadoValue || estado === estadoValue;
+
+                if (temaMatch && pelouroMatch && estadoMatch) {
+                    card.style.display = "block";
+                    pontosVisiveis++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Atualizar contador
+            if (temaValue || pelouroValue || estadoValue) {
+                contadorPontos.textContent = `${pontosVisiveis} ponto${pontosVisiveis !== 1 ? "s" : ""} encontrado${pontosVisiveis !== 1 ? "s" : ""}`;
+            } else {
+                contadorPontos.textContent = `${pontosCards.length} ponto${pontosCards.length !== 1 ? "s" : ""} no total`;
+            }
+
+            // Mostrar/esconder mensagem sem resultados
+            if (
+                pontosVisiveis === 0 &&
+                (temaValue || pelouroValue || estadoValue)
+            ) {
+                semResultados.style.display = "block";
+            } else {
+                semResultados.style.display = "none";
+            }
+        }
+
+        function limparFiltros() {
+            filtroTema.value = "";
+            filtroPelouro.value = "";
+            filtroEstado.value = "";
+            aplicarFiltros();
+        }
+
+        // Event listeners
+        filtroTema.addEventListener("change", aplicarFiltros);
+        filtroPelouro.addEventListener("change", aplicarFiltros);
+        filtroEstado.addEventListener("change", aplicarFiltros);
+        limparFiltrosBtn.addEventListener("click", limparFiltros);
+        limparFiltrosMsgBtn.addEventListener("click", limparFiltros);
+
+        // Aplicar filtros iniciais e mostrar contador
+        aplicarFiltros();
+    });
+</script>
