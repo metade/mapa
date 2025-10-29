@@ -11,8 +11,26 @@
 .map-container {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: calc(100vh - 160px);
     min-height: 400px;
+}
+
+/* Desktop: Map takes full viewport and position header absolutely */
+@media (min-width: 769px) {
+    .map-container {
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+
+    .map-header {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+    }
 }
 
 #map {
@@ -24,30 +42,21 @@
 
 /* Map Header Styles */
 .map-header {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
     z-index: 1000;
     backdrop-filter: blur(10px);
-    border-radius: 8px;
     max-width: 515px;
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .map-header {
-        position: relative;
-        top: 0;
-        left: 0;
-        right: 0;
         max-width: none;
-        border-radius: 0;
-        margin-bottom: 0;
+        top: 0;
     }
 
     .map-container {
-        height: calc(100vh - 140px);
+        height: calc(100vh - 160px);
+        position: relative;
     }
 }
 
@@ -105,4 +114,13 @@
     .maplibregl-ctrl-top-right {
         top: 10px;
     }
+}
+
+/* Filter collapse transition enhancement */
+#filterPanel {
+    transition: opacity 0.3s ease;
+}
+
+#filterPanel.collapsing {
+    opacity: 0.5;
 }

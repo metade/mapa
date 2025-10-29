@@ -3,7 +3,13 @@ class MapManager {
   constructor() {
     this.map = null;
     this.featuresData = null;
+    this.filteredData = null;
     this.selectedFeatureId = null;
+    this.filters = {
+      tema: "",
+      pelouro: "",
+      estado: "",
+    };
     this.init();
   }
 
@@ -33,6 +39,9 @@ class MapManager {
 
       // Initialize map
       this.initializeMap();
+
+      // Initialize filters
+      this.initializeFilters();
     } catch (error) {
       console.error("Error initializing map:", error);
       this.showError(`Erro ao carregar o mapa: ${error.message}`);
@@ -193,9 +202,10 @@ class MapManager {
     // - Clusters appear when zoomed out and points are close together
     // - Click clusters to zoom in and separate the points
     // - Individual points appear when zoomed in enough
+    const dataToShow = this.filteredData || this.featuresData;
     this.map.addSource("features", {
       type: "geojson",
-      data: this.featuresData,
+      data: dataToShow,
       cluster: true,
       clusterMaxZoom: 14, // Stop clustering at zoom 14
       clusterRadius: 50, // Group points within 50px radius
@@ -538,9 +548,10 @@ class MapManager {
   }
 
   fitMapToFeatures() {
-    if (!this.featuresData?.features?.length) return false;
+    const dataToUse = this.filteredData || this.featuresData;
+    if (!dataToUse?.features?.length) return false;
 
-    const coordinates = this.featuresData.features.map(
+    const coordinates = dataToUse.features.map(
       (feature) => feature.geometry.coordinates,
     );
 
@@ -620,10 +631,188 @@ class MapManager {
       console.warn("Error fitting map to boundary:", error);
     }
   }
+
+  // Initialize filter dropdowns and event listeners
+  initializeFilters() {
+    this.populateFilterDropdowns();
+    this.addFilterEventListeners();
+  }
+
+  // Populate filter dropdowns with unique values from data
+  populateFilterDropdowns() {
+    if (!this.featuresData || !this.featuresData.features) {
+      return;
+    }
+
+    const temas = new Set();
+    const pelouros = new Set();
+    const estados = new Set();
+
+    // Extract unique values
+    this.featuresData.features.forEach((feature) => {
+      if (feature.properties.tema) temas.add(feature.properties.tema);
+      if (feature.properties.pelouro) pelouros.add(feature.properties.pelouro);
+      if (feature.properties.estado) estados.add(feature.properties.estado);
+    });
+
+    // Populate dropdowns
+    this.populateDropdown("temaFilter", Array.from(temas).sort());
+    this.populateDropdown("pelouroFilter", Array.from(pelouros).sort());
+    this.populateDropdown("estadoFilter", Array.from(estados).sort());
+  }
+
+  // Helper method to populate a dropdown
+  populateDropdown(elementId, values) {
+    const select = document.getElementById(elementId);
+    if (!select) return;
+
+    // Clear existing options except the first "all" option
+    while (select.children.length > 1) {
+      select.removeChild(select.lastChild);
+    }
+
+    // Add new options
+    values.forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+  }
+
+  // Add event listeners for filter controls
+  addFilterEventListeners() {
+    const temaFilter = document.getElementById("temaFilter");
+    const pelouroFilter = document.getElementById("pelouroFilter");
+    const estadoFilter = document.getElementById("estadoFilter");
+    const clearFiltersBtn = document.getElementById("clearFilters");
+
+    if (temaFilter) {
+      temaFilter.addEventListener("change", () => {
+        this.filters.tema = temaFilter.value;
+        this.applyFilters();
+      });
+    }
+
+    if (pelouroFilter) {
+      pelouroFilter.addEventListener("change", () => {
+        this.filters.pelouro = pelouroFilter.value;
+        this.applyFilters();
+      });
+    }
+
+    if (estadoFilter) {
+      estadoFilter.addEventListener("change", () => {
+        this.filters.estado = estadoFilter.value;
+        this.applyFilters();
+      });
+    }
+
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener("click", () => {
+        this.clearFilters();
+      });
+    }
+  }
+
+  // Apply current filters to the data
+  applyFilters() {
+    if (!this.featuresData) return;
+
+    let filteredFeatures = this.featuresData.features;
+
+    // Apply tema filter
+    if (this.filters.tema) {
+      filteredFeatures = filteredFeatures.filter(
+        (feature) => feature.properties.tema === this.filters.tema,
+      );
+    }
+
+    // Apply pelouro filter
+    if (this.filters.pelouro) {
+      filteredFeatures = filteredFeatures.filter(
+        (feature) => feature.properties.pelouro === this.filters.pelouro,
+      );
+    }
+
+    // Apply estado filter
+    if (this.filters.estado) {
+      filteredFeatures = filteredFeatures.filter(
+        (feature) => feature.properties.estado === this.filters.estado,
+      );
+    }
+
+    // Create filtered GeoJSON
+    this.filteredData = {
+      ...this.featuresData,
+      features: filteredFeatures,
+    };
+
+    // Update map display
+    this.updateMapWithFilteredData();
+    this.updateActiveFiltersCount();
+  }
+
+  // Update map with filtered data
+  updateMapWithFilteredData() {
+    if (!this.map || !this.map.getSource("features")) return;
+
+    // Update the source data
+    this.map
+      .getSource("features")
+      .setData(this.filteredData || this.featuresData);
+
+    // Fit map to filtered features if any exist
+    if (this.filteredData && this.filteredData.features.length > 0) {
+      this.fitMapToFeatures();
+    }
+  }
+
+  // Clear all filters
+  clearFilters() {
+    this.filters = {
+      tema: "",
+      pelouro: "",
+      estado: "",
+    };
+
+    // Reset dropdown selections
+    const temaFilter = document.getElementById("temaFilter");
+    const pelouroFilter = document.getElementById("pelouroFilter");
+    const estadoFilter = document.getElementById("estadoFilter");
+
+    if (temaFilter) temaFilter.value = "";
+    if (pelouroFilter) pelouroFilter.value = "";
+    if (estadoFilter) estadoFilter.value = "";
+
+    // Clear filtered data
+    this.filteredData = null;
+
+    // Update map
+    this.updateMapWithFilteredData();
+    this.updateActiveFiltersCount();
+  }
+
+  // Update the active filters count badge
+  updateActiveFiltersCount() {
+    const badge = document.getElementById("activeFiltersCount");
+    if (!badge) return;
+
+    const activeCount = Object.values(this.filters).filter(
+      (filter) => filter !== "",
+    ).length;
+
+    if (activeCount > 0) {
+      badge.textContent = `${activeCount} filtro${activeCount > 1 ? "s" : ""} ativo${activeCount > 1 ? "s" : ""}`;
+      badge.style.display = "inline-block";
+    } else {
+      badge.style.display = "none";
+    }
+  }
 }
 
-// Initialize map when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
+// Initialize map when page loads
+document.addEventListener("DOMContentLoaded", function () {
   // Check if required libraries are loaded
   if (typeof maplibregl === "undefined") {
     console.error("MapLibre GL JS not loaded!");
